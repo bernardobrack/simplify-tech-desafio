@@ -13,8 +13,13 @@ public class TarefaService {
 
     private final TarefaRepository repository;
 
-    public List<Tarefa> listar() {
-        return repository.findAll();
+    public List<Tarefa> listar(String nome, Boolean realizado, Integer prioridade) {
+        return repository.findAll()
+                .stream()
+                .filter(t -> nome == null || t.getNome().toLowerCase().contains(nome.toLowerCase()))
+                .filter(t -> realizado == null || t.getRealizado().equals(realizado))
+                .filter(t -> prioridade == null || t.getPrioridade().equals(prioridade))
+                .toList();
     }
 
     public Tarefa salvar(Tarefa tarefa) {

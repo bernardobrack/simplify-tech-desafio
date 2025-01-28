@@ -6,6 +6,7 @@ import brack.bernardo.simplify_tech_desafio.model.Tarefa;
 import brack.bernardo.simplify_tech_desafio.request.PostTarefaRequest;
 import brack.bernardo.simplify_tech_desafio.response.GetTarefaResponse;
 import brack.bernardo.simplify_tech_desafio.service.TarefaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,15 +23,19 @@ public class TarefaController {
 
 
     @GetMapping
-    public ResponseEntity<List<GetTarefaResponse>> listar() {
-        List<Tarefa> tarefasEncontradas = service.listar();
+    public ResponseEntity<List<GetTarefaResponse>> listar(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) Boolean realizado,
+            @RequestParam(required = false) Integer prioridade
+    ) {
+        List<Tarefa> tarefasEncontradas = service.listar(nome, realizado, prioridade);
         List<GetTarefaResponse> body = mapper.toGetTarefaResponseList(tarefasEncontradas);
         return ResponseEntity
                 .ok(body);
     }
 
     @PostMapping
-    public ResponseEntity<GetTarefaResponse> criarTarefa(@RequestBody PostTarefaRequest tarefaRequest) {
+    public ResponseEntity<GetTarefaResponse> criarTarefa(@Valid @RequestBody PostTarefaRequest tarefaRequest) {
         Tarefa tarefa = mapper.toTarefa(tarefaRequest);
         Tarefa saved = service.salvar(tarefa);
         return ResponseEntity.ok(mapper.toGetTarefaResponse(saved));

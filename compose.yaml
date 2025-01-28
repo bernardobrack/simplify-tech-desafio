@@ -1,0 +1,14 @@
+services:
+  mysql:
+    image: mysql:9.2.0
+    container_name: mysql-simplify-tech-database
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ENV_ROOT_DATABASE_PASSWORD}
+      MYSQL_USER: ${ENV_DATABASE_USERNAME}
+      MYSQL_PASSWORD: ${ENV_DATABASE_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - simplify-db:/var/lib/mysql
+volumes:
+  simplify-db:

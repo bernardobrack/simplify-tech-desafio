@@ -3,7 +3,9 @@ package brack.bernardo.simplify_tech_desafio.service;
 import brack.bernardo.simplify_tech_desafio.model.Tarefa;
 import brack.bernardo.simplify_tech_desafio.repository.TarefaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -20,6 +22,11 @@ public class TarefaService {
                 .filter(t -> realizado == null || t.getRealizado().equals(realizado))
                 .filter(t -> prioridade == null || t.getPrioridade().equals(prioridade))
                 .toList();
+
+    }
+
+    public Tarefa buscarPorId(Long id) {
+        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tarefa nao encontrada"));
     }
 
     public Tarefa salvar(Tarefa tarefa) {

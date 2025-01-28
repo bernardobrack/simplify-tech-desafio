@@ -6,9 +6,11 @@ services:
       MYSQL_ROOT_PASSWORD: ${ENV_ROOT_DATABASE_PASSWORD}
       MYSQL_USER: ${ENV_DATABASE_USERNAME}
       MYSQL_PASSWORD: ${ENV_DATABASE_PASSWORD}
+      MYSQL_DATABASE: tarefas
     ports:
       - "3306:3306"
     volumes:
       - simplify-db:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/a.sql
 volumes:
   simplify-db:

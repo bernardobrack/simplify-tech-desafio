@@ -2,8 +2,14 @@ package brack.bernardo.simplify_tech_desafio.model;
 
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Tarefa {
 
     @Id
@@ -11,11 +17,9 @@ public class Tarefa {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String nome;
     @Column(nullable = false)
     private String descricao;
-    @Column(nullable = false)
     private Boolean realizado;
-    @Column(nullable = false)
     private Integer prioridade;
 }

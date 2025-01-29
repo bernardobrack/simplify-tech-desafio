@@ -1,0 +1,2 @@
+INSERT INTO tarefa (nome, descricao, realizado, prioridade) VALUES ('Arrumar cama', 'Devo arrumar a cama todo dia de manha.', DEFAULT, DEFAULT);
+INSERT INTO tarefa (nome, descricao, realizado, prioridade) VALUES ('Tomar cafe', 'Devo tomar algumas xicaras de cafe durante o dia.', true, 2);

@@ -1,0 +1,1 @@
+DELETE FROM tarefa WHERE 1=1;

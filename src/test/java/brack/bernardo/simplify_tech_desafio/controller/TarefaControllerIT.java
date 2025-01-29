@@ -15,7 +15,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlMergeMode;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Sql(value = "/sql/init_tarefas_table_shcema.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(value = "/sql/init_tarefas_table_schema.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(value = "/sql/clear_tarefa_table.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SqlMergeMode(value = SqlMergeMode.MergeMode.MERGE)
 class TarefaControllerIT extends IntegrationTestConfiguration {

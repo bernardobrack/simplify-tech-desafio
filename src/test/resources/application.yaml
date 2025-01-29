@@ -4,6 +4,5 @@ spring:
     hibernate:
       ddl-auto: none
   datasource:
-    url: jdbc:mysql://localhost:34213/tarefas
-    username: ${ENV_ROOT_DATABASE_USERNAME:root}
-    password: ${ENV_ROOT_DATABASE_PASSWORD:root}
+    url: jdbc:mysql://localhost:34213/tarefas # This database URL is here so that the Development database is not used in case Testcontainers fail.
+                                              # Using this database URL will result in Errors while loading Spring Context.

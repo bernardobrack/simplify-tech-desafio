@@ -15,8 +15,12 @@ import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -31,6 +35,8 @@ public class TarefaServiceUnitTest {
 
     private Tarefa tarefa;
 
+
+
     @BeforeEach
     void setUp() {
         tarefa = Tarefa.builder()
@@ -44,7 +50,7 @@ public class TarefaServiceUnitTest {
 
 
     @Test
-    public void buscarPorId_whenIdGivenIsNull_shouldThrowBadRequestException() {
+    void buscarPorId_whenIdGivenIsNull_shouldThrowBadRequestException() {
         Assertions.assertThatThrownBy(() -> service.buscarPorId(null))
                 .isInstanceOf(ResponseStatusException.class)
                 .message().contains("400 BAD_REQUEST");
@@ -52,7 +58,7 @@ public class TarefaServiceUnitTest {
     }
 
     @Test
-    public void buscarPorId_whenIdGivenIsNotFound_shouldThrowNotFoundException() {
+    void buscarPorId_whenIdGivenIsNotFound_shouldThrowNotFoundException() {
         BDDMockito.when(repository.findById(BDDMockito.anyLong())).thenReturn(Optional.empty());
 
         Assertions.assertThatThrownBy(() -> service.buscarPorId(-1L))
@@ -61,7 +67,7 @@ public class TarefaServiceUnitTest {
     }
 
     @Test
-    public void buscarPorId_whenIdGivenIsFound_shouldReturnTarefa() {
+    void buscarPorId_whenIdGivenIsFound_shouldReturnTarefa() {
         BDDMockito.when(repository.findById(BDDMockito.anyLong())).thenReturn(Optional.of(tarefa));
         tarefa.setId(1L);
         Tarefa actual = service.buscarPorId(tarefa.getId());
@@ -70,14 +76,14 @@ public class TarefaServiceUnitTest {
     }
 
     @Test
-    public void salvar_whenTarefaIsNull_shouldThrowBadRequestException() {
+    void salvar_whenTarefaIsNull_shouldThrowBadRequestException() {
         Assertions.assertThatThrownBy(() -> service.salvar(null))
                 .isInstanceOf(ResponseStatusException.class)
                 .message().contains("400 BAD_REQUEST");
     }
 
     @Test
-    public void salvar_whenTarefaIsFullyGiven_shouldCallRepositorySaveWithGivenTarefa() {
+    void salvar_whenTarefaIsFullyGiven_shouldCallRepositorySaveWithGivenTarefa() {
         ArgumentCaptor<Tarefa> captor = ArgumentCaptor.forClass(Tarefa.class);
         service.salvar(tarefa);
         BDDMockito.verify(repository, BDDMockito.times(1)).save(captor.capture());
@@ -90,7 +96,7 @@ public class TarefaServiceUnitTest {
     }
 
     @Test
-    public void salvar_whenTarefaRealizadoIsNull_shouldCallRepositorySaveWithRealizadoFalse() {
+    void salvar_whenTarefaRealizadoIsNull_shouldCallRepositorySaveWithRealizadoFalse() {
         ArgumentCaptor<Tarefa> captor = ArgumentCaptor.forClass(Tarefa.class);
         tarefa.setRealizado(null);
         service.salvar(tarefa);
@@ -105,7 +111,7 @@ public class TarefaServiceUnitTest {
 
     @ParameterizedTest
     @MethodSource(value = "invalidPrioritiesSource")
-    public void salvar_whenTarefaPriorityIsNullOrInvalid_shouldCallRepositorySaveWithPriorityZero(Integer priority) {
+    void salvar_whenTarefaPriorityIsNullOrInvalid_shouldCallRepositorySaveWithPriorityZero(Integer priority) {
         ArgumentCaptor<Tarefa> captor = ArgumentCaptor.forClass(Tarefa.class);
         tarefa.setPrioridade(priority);
         service.salvar(tarefa);
@@ -119,7 +125,7 @@ public class TarefaServiceUnitTest {
     }
 
     @Test
-    public void salvar_whenTarefaIsGiven_shouldReturnIt() {
+    void salvar_whenTarefaIsGiven_shouldReturnIt() {
         BDDMockito.when(repository.save(BDDMockito.any(Tarefa.class))).thenReturn(tarefa);
         Tarefa actual = service.salvar(tarefa);
         Assertions.assertThat(actual.getNome()).isEqualTo(tarefa.getNome());
@@ -128,6 +134,30 @@ public class TarefaServiceUnitTest {
         Assertions.assertThat(actual.getRealizado()).isEqualTo(tarefa.getRealizado());
     }
 
+    @ParameterizedTest
+    @MethodSource("gerarFindAllByNomeLikeRealizadoAndPrioridadeAceitandoNullParametros")
+    void listar_mustCallRepositoryFindAllByNomeLikeRealizadoAndPrioridadeAceitandoNullWithCorrectParams(String nome, Boolean realizado, Integer prioridade, Pageable pageable) {
+        String filtro = nome == null ? "%" : "%" + nome + "%";
+        service.listar(nome, realizado, prioridade, pageable);
+        BDDMockito.verify(repository, BDDMockito.times(1)).findAllByNomeLikeRealizadoAndPrioridadeAceitandoNull(filtro, realizado, prioridade, pageable);
+    }
+
+    @Test
+    void listar_mustReturnPageReturnedFromRepository() {
+        Page<Tarefa> pageToReturn = new PageImpl<Tarefa>(List.of(tarefa));
+        BDDMockito.when(repository.findAllByNomeLikeRealizadoAndPrioridadeAceitandoNull(BDDMockito.anyString(), BDDMockito.anyBoolean(), BDDMockito.anyInt(), BDDMockito.any(Pageable.class)))
+                .thenReturn(pageToReturn);
+        Page<Tarefa> returnedPage = service.listar("arr", false, 3, Pageable.unpaged());
+        Assertions.assertThat(returnedPage).isNotNull().isEqualTo(pageToReturn);
+    }
+    public static Stream<Arguments> gerarFindAllByNomeLikeRealizadoAndPrioridadeAceitandoNullParametros() {
+        return Stream.of(
+                Arguments.of((Object) null, true, 0, Pageable.unpaged()),
+                Arguments.of( "ca", false, 1, Pageable.unpaged()),
+                Arguments.of( "bo", true, 2, Pageable.unpaged())
+
+        );
+    }
     private static Stream<Arguments> invalidPrioritiesSource() {
         return Stream.of(
                 Arguments.of((Object) null),

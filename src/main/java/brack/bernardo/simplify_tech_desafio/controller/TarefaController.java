@@ -25,15 +25,17 @@ public class TarefaController {
 
 
     @GetMapping
-    public ResponseEntity<List<GetTarefaResponse>> listar(
+    public ResponseEntity<Page<GetTarefaResponse>> listar(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) Boolean realizado,
-            @RequestParam(required = false) Integer prioridade
+            @RequestParam(required = false) Integer prioridade,
+            Pageable pageable
     ) {
-        List<Tarefa> tarefasEncontradas = service.listar(nome, realizado, prioridade);
-        List<GetTarefaResponse> body = mapper.toGetTarefaResponseList(tarefasEncontradas);
+        Page<Tarefa> tarefasEncontradas = service.listar(nome, realizado, prioridade, pageable);
+        var responsePage = tarefasEncontradas.map(mapper::toGetTarefaResponse);
+
         return ResponseEntity
-                .ok(body);
+                .ok(responsePage);
     }
 
     @GetMapping("{id}")

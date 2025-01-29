@@ -13,5 +13,11 @@ Repositório feito para resolver o desafio proposto neste README.
     - Prioridade
 - Criar CRUD de tarefas
 
-## Considerações
+## Considerações sobre a solução
 - Foi escolhida a linguagem Java, com Spring Boot para fazer uma API Rest.
+- Foi utilizado TestRestTemplate para as requisições em testes de integração.
+- O banco de dados utilizado foi o MySql (iniciar através de 'docker compose up' na root do projeto).
+- Para os testes, foi utilizado Testcontainers com um container MySql.
+- A criação das tabelas é feita por um arquivo schema.sql, o Data JPA ddl-auto está em NONE.
+- As variáveis de ambiente estão em arquivos .env não upados no GitHub, utilizar os .envTemplate para criação.
+- Foi utilizado o maven-surefire-plugin para rodar os testes com o Spring Profile "test" automaticamente.

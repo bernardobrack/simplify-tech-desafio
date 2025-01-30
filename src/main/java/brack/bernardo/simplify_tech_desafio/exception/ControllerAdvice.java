@@ -15,6 +15,7 @@ import java.nio.charset.MalformedInputException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -27,7 +28,7 @@ public class ControllerAdvice {
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
                         .message(ex.getMessage())
-                        .timestamp(getFormattedOffsetDateTimeNow(DateTimeFormatter.ISO_DATE_TIME))
+                        .timestamp(getFormattedOffsetDateTimeNow())
                         .build()
         );
     }
@@ -39,7 +40,7 @@ public class ControllerAdvice {
                   .status(HttpStatus.NOT_FOUND.value())
                   .path(request.getRequestURI())
                   .message(ex.getMessage())
-                  .timestamp(getFormattedOffsetDateTimeNow(DateTimeFormatter.ISO_DATE_TIME))
+                  .timestamp(getFormattedOffsetDateTimeNow())
                   .build()
         );
     }
@@ -51,7 +52,7 @@ public class ControllerAdvice {
                   .status(HttpStatus.NOT_FOUND.value())
                   .path(request.getRequestURI())
                   .message(ex.getMessage())
-                  .timestamp(getFormattedOffsetDateTimeNow(DateTimeFormatter.ISO_DATE_TIME))
+                  .timestamp(getFormattedOffsetDateTimeNow())
                   .build()
         );
     }
@@ -62,7 +63,7 @@ public class ControllerAdvice {
                         .status(HttpStatus.METHOD_NOT_ALLOWED.value())
                         .path(request.getRequestURI())
                         .message(ex.getMessage())
-                        .timestamp(getFormattedOffsetDateTimeNow(DateTimeFormatter.ISO_DATE_TIME))
+                        .timestamp(getFormattedOffsetDateTimeNow())
                         .build()
         );
     }
@@ -79,17 +80,18 @@ public class ControllerAdvice {
                                         .filter(str -> !str.trim().isEmpty())
                                         .sorted()
                                         .collect(Collectors.joining(", ")))
-                        .timestamp(getFormattedOffsetDateTimeNow(DateTimeFormatter.ISO_DATE_TIME))
+                        .timestamp(getFormattedOffsetDateTimeNow())
                         .build());
     }
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        var requiredTypeName = (Objects.isNull(ex.getRequiredType())) ? "UNKNOWN" : ex.getRequiredType().getSimpleName();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 ApiErrorResponse.builder()
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
-                        .timestamp(getFormattedOffsetDateTimeNow(DateTimeFormatter.ISO_DATE_TIME))
-                        .message(ex.getPropertyName() + " should be of type " + ex.getRequiredType().getSimpleName() + "; Value encountered: " + ex.getValue())
+                        .timestamp(getFormattedOffsetDateTimeNow())
+                        .message(ex.getPropertyName() + " should be of type " + requiredTypeName + "; Value encountered: " + ex.getValue())
                         .build()
         );
 
@@ -108,7 +110,9 @@ public class ControllerAdvice {
                 .internalServerError()
                 .body(new DefaultErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "An unexpected error has occurred."));
     }
-    private String getFormattedOffsetDateTimeNow(DateTimeFormatter formatter) {
-        return OffsetDateTime.now().format(formatter);
+
+    private String getFormattedOffsetDateTimeNow() {
+        return OffsetDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
     }
+
 }

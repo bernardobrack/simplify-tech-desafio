@@ -1,13 +1,13 @@
 package brack.bernardo.simplify_tech_desafio.service;
 
+import brack.bernardo.simplify_tech_desafio.exception.ContentNotFoundException;
+import brack.bernardo.simplify_tech_desafio.exception.MalformedContentException;
 import brack.bernardo.simplify_tech_desafio.model.Tarefa;
 import brack.bernardo.simplify_tech_desafio.repository.TarefaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 
 @Service
@@ -26,12 +26,12 @@ public class TarefaService {
     }
 
     public Tarefa buscarPorId(Long id) {
-        if(id == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tarefa nao encontrada");
-        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tarefa nao encontrada"));
+        if(id == null) throw new MalformedContentException("Tarefa nao encontrada");
+        return repository.findById(id).orElseThrow(() -> new ContentNotFoundException("Tarefa nao encontrada"));
     }
 
     public Tarefa salvar(Tarefa tarefa) {
-        if(tarefa == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tarefa nao recebida ou mal formada");
+        if(tarefa == null) throw new MalformedContentException("Tarefa nao recebida ou mal formada");
         forcarValorPadraoQueandoInvalido(tarefa);
 
 

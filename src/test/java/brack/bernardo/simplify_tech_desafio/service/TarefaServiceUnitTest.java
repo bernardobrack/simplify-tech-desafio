@@ -1,6 +1,8 @@
 package brack.bernardo.simplify_tech_desafio.service;
 
 
+import brack.bernardo.simplify_tech_desafio.exception.ContentNotFoundException;
+import brack.bernardo.simplify_tech_desafio.exception.MalformedContentException;
 import brack.bernardo.simplify_tech_desafio.model.Tarefa;
 import brack.bernardo.simplify_tech_desafio.repository.TarefaRepository;
 import org.assertj.core.api.Assertions;
@@ -50,10 +52,9 @@ public class TarefaServiceUnitTest {
 
 
     @Test
-    void buscarPorId_whenIdGivenIsNull_shouldThrowBadRequestException() {
+    void buscarPorId_whenIdGivenIsNull_shouldThrowMalformedContentException() {
         Assertions.assertThatThrownBy(() -> service.buscarPorId(null))
-                .isInstanceOf(ResponseStatusException.class)
-                .message().contains("400 BAD_REQUEST");
+                .isInstanceOf(MalformedContentException.class);
 
     }
 
@@ -62,8 +63,7 @@ public class TarefaServiceUnitTest {
         BDDMockito.when(repository.findById(BDDMockito.anyLong())).thenReturn(Optional.empty());
 
         Assertions.assertThatThrownBy(() -> service.buscarPorId(-1L))
-                .isInstanceOf(ResponseStatusException.class)
-                .message().contains("404 NOT_FOUND");
+                .isInstanceOf(ContentNotFoundException.class);
     }
 
     @Test
@@ -76,10 +76,9 @@ public class TarefaServiceUnitTest {
     }
 
     @Test
-    void salvar_whenTarefaIsNull_shouldThrowBadRequestException() {
+    void salvar_whenTarefaIsNull_shouldThrowMalformedContentException() {
         Assertions.assertThatThrownBy(() -> service.salvar(null))
-                .isInstanceOf(ResponseStatusException.class)
-                .message().contains("400 BAD_REQUEST");
+                .isInstanceOf(MalformedContentException.class);
     }
 
     @Test

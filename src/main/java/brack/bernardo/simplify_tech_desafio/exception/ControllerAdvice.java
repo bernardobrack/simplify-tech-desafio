@@ -15,6 +15,7 @@ import java.nio.charset.MalformedInputException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -78,7 +79,7 @@ public class ControllerAdvice {
                                 Arrays.stream(ex.getDetailMessageArguments())
                                         .map(Object::toString)
                                         .filter(str -> !str.trim().isEmpty())
-                                        .sorted()
+                                        .sorted(Comparator.comparing(s -> s, String.CASE_INSENSITIVE_ORDER))
                                         .collect(Collectors.joining(", ")))
                         .timestamp(getFormattedOffsetDateTimeNow())
                         .build());

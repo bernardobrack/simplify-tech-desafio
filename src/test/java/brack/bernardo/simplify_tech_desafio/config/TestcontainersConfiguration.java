@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Profile;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@TestConfiguration(proxyBeanMethods = false) // CGlib vs JDK Proxy | AOP
+@TestConfiguration(proxyBeanMethods = false)
 @Profile("itest")
 public class TestcontainersConfiguration {
 

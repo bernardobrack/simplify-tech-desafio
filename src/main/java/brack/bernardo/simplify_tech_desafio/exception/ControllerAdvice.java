@@ -3,6 +3,9 @@ package brack.bernardo.simplify_tech_desafio.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,6 +46,18 @@ public class ControllerAdvice {
                   .message(ex.getMessage())
                   .timestamp(getFormattedOffsetDateTimeNow())
                   .build()
+        );
+    }
+
+    @ExceptionHandler(MalformedContentException.class)
+    public ResponseEntity<ApiErrorResponse> handleMalformedContentException(MalformedContentException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ApiErrorResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .path(request.getRequestURI())
+                        .message(ex.getMessage())
+                        .timestamp(getFormattedOffsetDateTimeNow())
+                        .build()
         );
     }
 
@@ -98,12 +113,37 @@ public class ControllerAdvice {
 
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableExcepiton(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ApiErrorResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .path(request.getRequestURI())
+                        .message(ex.getMessage())
+                        .timestamp(getFormattedOffsetDateTimeNow())
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiErrorResponse> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(
+                ApiErrorResponse.builder()
+                        .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value())
+                        .path(request.getRequestURI())
+                        .message(ex.getMessage())
+                        .timestamp(getFormattedOffsetDateTimeNow())
+                        .build()
+        );
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<DefaultErrorResponse> handleResponseStatusException(ResponseStatusException ex) {
         return ResponseEntity
                 .status(ex.getStatusCode())
                 .body(new DefaultErrorResponse(ex.getStatusCode().value(), ex.getMessage()));
     }
+
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<DefaultErrorResponse> handleException(Exception ex) {

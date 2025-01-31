@@ -3,6 +3,7 @@ package brack.bernardo.simplify_tech_desafio.controller;
 
 import brack.bernardo.simplify_tech_desafio.mapper.TarefaMapper;
 import brack.bernardo.simplify_tech_desafio.model.Tarefa;
+import brack.bernardo.simplify_tech_desafio.request.PatchTarefaRequest;
 import brack.bernardo.simplify_tech_desafio.request.PostTarefaRequest;
 import brack.bernardo.simplify_tech_desafio.response.GetTarefaResponse;
 import brack.bernardo.simplify_tech_desafio.service.TarefaService;
@@ -38,6 +39,13 @@ public class TarefaController {
                 .ok(responsePage);
     }
 
+    @PostMapping
+    public ResponseEntity<GetTarefaResponse> criarTarefa(@Valid @RequestBody PostTarefaRequest tarefaRequest) {
+        Tarefa tarefa = mapper.toTarefa(tarefaRequest);
+        Tarefa saved = service.salvar(tarefa);
+        return new ResponseEntity<>(mapper.toGetTarefaResponse(saved), HttpStatus.CREATED);
+    }
+
     @GetMapping("{id}")
     public ResponseEntity<GetTarefaResponse> buscarTarefaPorId(@PathVariable Long id) {
         Tarefa encontrada = service.buscarPorId(id);
@@ -45,12 +53,22 @@ public class TarefaController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
-    public ResponseEntity<GetTarefaResponse> criarTarefa(@Valid @RequestBody PostTarefaRequest tarefaRequest) {
-        Tarefa tarefa = mapper.toTarefa(tarefaRequest);
-        Tarefa saved = service.salvar(tarefa);
-        return new ResponseEntity<>(mapper.toGetTarefaResponse(saved), HttpStatus.CREATED);
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> removerTarefa(@PathVariable Long id) {
+        service.deletarTarefa(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    @PatchMapping("{id}")
+    public ResponseEntity<Void> atualizarTarefa(@PathVariable Long id, @RequestBody PatchTarefaRequest tarefaRequest) {
+        Tarefa tarefa = mapper.toTarefa(tarefaRequest);
+        service.atualizarTarefa(id, tarefa);
+        return ResponseEntity.noContent().build();
+    }
+
+
+
+
 
 
 

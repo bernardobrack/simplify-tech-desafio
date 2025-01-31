@@ -1,6 +1,7 @@
 package brack.bernardo.simplify_tech_desafio.mapper;
 
 import brack.bernardo.simplify_tech_desafio.model.Tarefa;
+import brack.bernardo.simplify_tech_desafio.request.PatchTarefaRequest;
 import brack.bernardo.simplify_tech_desafio.request.PostTarefaRequest;
 import brack.bernardo.simplify_tech_desafio.response.GetTarefaResponse;
 import org.mapstruct.Mapper;
@@ -16,4 +17,6 @@ public interface TarefaMapper {
 
 
     Tarefa toTarefa(PostTarefaRequest tarefa);
+    Tarefa toTarefa(PatchTarefaRequest tarefa);
+
 }

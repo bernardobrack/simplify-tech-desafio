@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
@@ -36,7 +37,6 @@ public class TarefaServiceUnitTest {
     private TarefaRepository repository;
 
     private Tarefa tarefa;
-
 
 
     @BeforeEach
@@ -149,6 +149,69 @@ public class TarefaServiceUnitTest {
         Page<Tarefa> returnedPage = service.listar("arr", false, 3, Pageable.unpaged());
         Assertions.assertThat(returnedPage).isNotNull().isEqualTo(pageToReturn);
     }
+
+    @Test
+    void atualizarTarefa_whenTarefaWithIdDoesntExist_shouldThrowContentNotFoundException() {
+        BDDMockito.when(repository.findById(1L)).thenReturn(Optional.empty());
+        Assertions.assertThatThrownBy(() -> service.atualizarTarefa(1L, tarefa))
+                .isInstanceOf(ContentNotFoundException.class);
+    }
+
+    @Test
+    void atualizarTarefa_whenTarefaWithIdExists_shouldCallRepositoryWithItsNewValues() {
+        BDDMockito.when(repository.findById(1L)).thenReturn(Optional.of(tarefa));
+        ArgumentCaptor<Tarefa> captor = ArgumentCaptor.forClass(Tarefa.class);
+        Tarefa newTarefa = Tarefa.builder().nome("AAAA nome").build();
+
+        service.atualizarTarefa(1L, newTarefa);
+
+        BDDMockito.verify(repository, BDDMockito.times(1)).save(captor.capture());
+
+        Tarefa salva = captor.getValue();
+        Assertions.assertThat(salva).isSameAs(tarefa);
+        Assertions.assertThat(salva).isNotSameAs(newTarefa);
+        Assertions.assertThat(salva.getNome()).isEqualTo(newTarefa.getNome());
+        Assertions.assertThat(salva.getDescricao()).isNotNull();
+        Assertions.assertThat(salva.getPrioridade()).isNotNull();
+        Assertions.assertThat(salva.getRealizado()).isNotNull();
+
+    }
+
+    @ParameterizedTest
+    @MethodSource("gerarTarefaMalFormada")
+    void atualizarTarefa_whenTarefaWithIdExistsButFieldInvalid_shouldThrowMalformedContentException(String nome, String descricao, Boolean realizado, Integer prioridade) {
+        Tarefa newTarefa = Tarefa.builder().nome(nome).descricao(descricao).realizado(realizado).prioridade(prioridade).build();
+        BDDMockito.when(repository.findById(1L)).thenReturn(Optional.of(tarefa));
+        Assertions.assertThatThrownBy(() -> service.atualizarTarefa(1L, newTarefa))
+                .isInstanceOf(MalformedContentException.class);
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("gerarTarefaBemFormada")
+    void atualizarTarefa_whenTarefaWithIdExistsAndValid_shouldUpdateOnlyNonNullFields(String nome, String descricao, Boolean realizado, Integer prioridade) {
+        Tarefa newTarefa = Tarefa.builder()
+                .nome(nome)
+                .descricao(descricao)
+                .realizado(realizado)
+                .prioridade(prioridade)
+                .build();
+        tarefa.setId(1L);
+        BDDMockito.when(repository.findById(1L)).thenReturn(Optional.of(tarefa));
+        ArgumentCaptor<Tarefa> captor = ArgumentCaptor.forClass(Tarefa.class);
+
+        service.atualizarTarefa(1L, newTarefa);
+        BDDMockito.verify(repository, BDDMockito.times(1)).save(captor.capture());
+
+        Tarefa salva = captor.getValue();
+        Assertions.assertThat(salva).hasNoNullFieldsOrProperties();
+        if(nome != null) Assertions.assertThat(salva.getNome()).isEqualTo(nome);
+        if(descricao != null) Assertions.assertThat(salva.getDescricao()).isEqualTo(descricao);
+        if(realizado != null) Assertions.assertThat(salva.getRealizado()).isEqualTo(realizado);
+        if(prioridade != null) Assertions.assertThat(salva.getPrioridade()).isEqualTo(prioridade);
+
+    }
+
     public static Stream<Arguments> gerarFindAllByNomeLikeRealizadoAndPrioridadeAceitandoNullParametros() {
         return Stream.of(
                 Arguments.of((Object) null, true, 0, Pageable.unpaged()),
@@ -164,4 +227,25 @@ public class TarefaServiceUnitTest {
                 Arguments.of(4)
         );
     }
+
+    public static Stream<Arguments> gerarTarefaMalFormada() {
+        return Stream.of(
+                Arguments.of("", "descricao", null,null),
+                Arguments.of("nome", "", true, 0),
+                Arguments.of("nome", "descricao", null, 4),
+                Arguments.of("nome", "descricao", null, -1)
+        );
+    }
+
+    public static Stream<Arguments> gerarTarefaBemFormada() {
+        return Stream.of(
+                Arguments.of("nome",null,null,null),
+                Arguments.of(null,"descricao",null,null),
+                Arguments.of("nome","descricao",true,null),
+                Arguments.of(null,null,null,null),
+                Arguments.of("nome", "descricao", false, 1)
+        );
+    }
+
+
 }

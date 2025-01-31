@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+
 public class TarefaService {
 
     private final TarefaRepository repository;
@@ -19,9 +20,7 @@ public class TarefaService {
     public Page<Tarefa> listar(String nome, Boolean realizado, Integer prioridade, Pageable pageable) {
 
         String filtroNome = nome == null ? "%" : "%" + nome + "%";
-        Page<Tarefa> pagina = repository.findAllByNomeLikeRealizadoAndPrioridadeAceitandoNull(filtroNome, realizado, prioridade, pageable);
-
-        return pagina;
+        return repository.findAllByNomeLikeRealizadoAndPrioridadeAceitandoNull(filtroNome, realizado, prioridade, pageable);
 
     }
 
@@ -32,17 +31,59 @@ public class TarefaService {
 
     public Tarefa salvar(Tarefa tarefa) {
         if(tarefa == null) throw new MalformedContentException("Tarefa nao recebida ou mal formada");
-        forcarValorPadraoQueandoInvalido(tarefa);
+        forcarValorPadraoQuandoInvalido(tarefa);
 
 
         return repository.save(tarefa);
     }
 
-    private void forcarValorPadraoQueandoInvalido(Tarefa tarefa) {
-        if(tarefa.getPrioridade() == null || tarefa.getPrioridade() < 0 || tarefa.getPrioridade() > 3) {
+    private void forcarValorPadraoQuandoInvalido(Tarefa tarefa) {
+        if(!isPrioridadeValida(tarefa.getPrioridade())) {
             tarefa.setPrioridade(0);
         }
         if(tarefa.getRealizado() == null) tarefa.setRealizado(false);
     }
+    private boolean isPrioridadeValida(Integer prioridade) {
+        return !(prioridade == null || prioridade < 0 || prioridade > 3);
+    }
 
+    public void deletarTarefa(Long id) {
+
+        repository.deleteById(id);
+    }
+
+    public void atualizarTarefa(Long id, Tarefa tarefa) {
+        Tarefa found = repository.findById(id).orElseThrow(() -> new ContentNotFoundException("Tarefa nao encontrada"));
+        boolean changeNome = false, changePrioridade = false, changeDescricao = false;
+        if(tarefa.getPrioridade() != null) {
+            assertPrioridadeValid(tarefa.getPrioridade());
+            changePrioridade = true;
+        }
+        if(tarefa.getNome() != null) {
+            assertNomeValid(tarefa.getNome());
+            changeNome = true;
+        }
+        if(tarefa.getDescricao() != null) {
+            assertDescricaoValid(tarefa.getDescricao());
+            changeDescricao = true;
+        }
+
+        if(changePrioridade) found.setPrioridade(tarefa.getPrioridade());
+        if(tarefa.getRealizado() != null) found.setRealizado(tarefa.getRealizado());
+        if(changeNome) found.setNome(tarefa.getNome());
+        if(changeDescricao) found.setDescricao(tarefa.getDescricao());
+        repository.save(found);
+    }
+
+    private void assertNomeValid(String nome) {
+        if(nome.trim().isBlank()) throw new MalformedContentException("Nome invalido");
+    }
+
+    private void assertDescricaoValid(String descricao) {
+        if(descricao.trim().isBlank()) throw new MalformedContentException("Descricao invalida");
+    }
+
+    private void assertPrioridadeValid(Integer prioridade) {
+        if(!isPrioridadeValida(prioridade)) throw new MalformedContentException("Prioridade invalida");
+    }
 }
